@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: gridwise-optimizer
+    runtime: docker
+    rootDir: backend
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false   # set this in the Render dashboard; do not commit
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash
+      - key: PORT
+        value: 8000
