@@ -89,7 +89,10 @@ def normalize(raw: List[Dict[str, Any]], req: OptimizeRequest) -> List[Normalize
     for item in raw:
         if not isinstance(item, dict):
             raise ValueError("interpretation entry must be an object")
-        idx = int(item.get("note_index", -1))
+        raw_idx = item.get("note_index", -1)
+        if type(raw_idx) is not int:
+            raise ValueError("note_index must be an integer")
+        idx = raw_idx
         if idx in seen_indices:
             raise ValueError(f"duplicate note_index {idx}")
         seen_indices.add(idx)
@@ -120,7 +123,7 @@ def normalize(raw: List[Dict[str, Any]], req: OptimizeRequest) -> List[Normalize
         hours = adj.get("hours")
         if not isinstance(hours, list) or not hours:
             raise ValueError(f"note_index {idx}: hours must be a non-empty list")
-        if any((not isinstance(h, int)) or h < 0 or h > 23 for h in hours):
+        if any((type(h) is not int) or h < 0 or h > 23 for h in hours):
             raise ValueError(f"note_index {idx}: hours must be ints 0..23")
         hours_clean = sorted(set(hours))
         if hours_clean != list(hours):
@@ -135,7 +138,7 @@ def normalize(raw: List[Dict[str, Any]], req: OptimizeRequest) -> List[Normalize
 
         if dtype == "solar_reduction":
             factor = adj.get("factor")
-            if factor is None or not isinstance(factor, (int, float)) or math.isnan(float(factor)):
+            if factor is None or type(factor) not in (int, float) or not math.isfinite(float(factor)):
                 raise ValueError(f"note_index {idx}: solar_reduction.factor required")
             factor = float(factor)
             if not (0.0 <= factor <= 1.0):
@@ -143,7 +146,7 @@ def normalize(raw: List[Dict[str, Any]], req: OptimizeRequest) -> List[Normalize
             nd.factor = factor
         elif dtype == "minimum_battery_reserve":
             mr = adj.get("minimum_energy_kwh")
-            if mr is None or not isinstance(mr, (int, float)) or math.isnan(float(mr)):
+            if mr is None or type(mr) not in (int, float) or not math.isfinite(float(mr)):
                 raise ValueError(f"note_index {idx}: minimum_energy_kwh required")
             mr = float(mr)
             if mr < 0 or mr > cap:
@@ -151,7 +154,7 @@ def normalize(raw: List[Dict[str, Any]], req: OptimizeRequest) -> List[Normalize
             nd.minimum_energy_kwh = mr
         elif dtype == "max_grid_window":
             mg = adj.get("max_grid_kwh")
-            if mg is None or not isinstance(mg, (int, float)) or math.isnan(float(mg)):
+            if mg is None or type(mg) not in (int, float) or not math.isfinite(float(mg)):
                 raise ValueError(f"note_index {idx}: max_grid_kwh required")
             mg = float(mg)
             if mg < 0:
