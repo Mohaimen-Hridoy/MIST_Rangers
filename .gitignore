@@ -1,0 +1,26 @@
+# Env / secrets
+.env
+.env.local
+backend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Build / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Tooling caches
+.puku-cli/
+.kilo/
+.pytest_cache/backend/response.json
