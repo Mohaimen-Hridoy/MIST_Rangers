@@ -188,16 +188,19 @@ def interpret_notes(
                  None if parsed is None else len(parsed), len(notes))
         return deterministic_interpret_all(notes, capacity_kwh)
 
-    # Make sure note_index labels match the original ordering; if the LLM
-    # misnumbered, fix it up so the wire format stays valid.
+    # Preserve the model's mapping for deterministic validation. A wrong
+    # note_index must fail closed instead of being silently reassigned.
     fixed: List[Dict[str, Any]] = []
     for i, item in enumerate(parsed):
         item = dict(item)
-        item.setdefault("note_index", i)
-        item["note_index"] = i
-        # Backfill applies from directive_type if the LLM omitted it.
-        if "directive_type" in item and "applies" not in item:
-            item["applies"] = item["directive_type"] != "no_op"
+        if "note_index" not in item or not isinstance(item["note_index"], int):
+            return deterministic_interpret_all(notes, capacity_kwh)
+        if item["note_index"] != i:
+            return deterministic_interpret_all(notes, capacity_kwh)
+        if "applies" not in item or not isinstance(item["applies"], bool):
+            return deterministic_interpret_all(notes, capacity_kwh)
+        if item.get("applies") != (item.get("directive_type") != "no_op"):
+            return deterministic_interpret_all(notes, capacity_kwh)
         fixed.append(item)
 
     # Patch explanation to note the LLM was used.

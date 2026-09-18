@@ -109,5 +109,5 @@ def optimize_energy(req: OptimizeRequest) -> OptimizeResponse:
     except HTTPException:
         raise
     except Exception as exc:  # never expose secrets or stacks
-        logger.exception("optimize-energy failed")
+        logger.error("optimize-energy failed: %s", exc.__class__.__name__)
         raise HTTPException(status_code=500, detail=f"internal error: {exc.__class__.__name__}")

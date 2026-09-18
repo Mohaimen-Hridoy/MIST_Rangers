@@ -102,6 +102,10 @@ def normalize(raw: List[Dict[str, Any]], req: OptimizeRequest) -> List[Normalize
         explanation = str(item.get("explanation", "")).strip()
 
         if dtype == "no_op":
+            if item.get("applies") is not False:
+                raise ValueError(f"note_index {idx}: no_op must set applies=false")
+            if item.get("structured_adjustment") is not None:
+                raise ValueError(f"note_index {idx}: no_op must have null structured_adjustment")
             out.append(NormalizedDirective(
                 note_index=idx,
                 directive_type="no_op",
