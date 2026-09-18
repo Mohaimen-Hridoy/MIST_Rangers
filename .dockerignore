@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Python caches and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+
+# Testing and linters
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Offline validation and testing scripts
+validate.py
+response.json
+*.log

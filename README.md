@@ -62,16 +62,49 @@ Dockerfile and starts `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
 3. In the Render dashboard, set the env var `GEMINI_API_KEY`.
 4. Once live: `curl https://<service>.onrender.com/health` → `{"status":"ok"}`.
 
-### Docker
+### Docker & Docker Compose
+
+#### Option A: Run with Docker Compose (Recommended)
+
+1. Create or configure `.env` (optional for local fallback, required for live Gemini judging):
+   ```bash
+   cp .env.example .env
+   # Edit .env and paste your GEMINI_API_KEY
+   ```
+
+2. Start the service with one command:
+   ```bash
+   docker compose up --build -d
+   ```
+
+3. Verify health and test with sample payload:
+   ```bash
+   # Check service health
+   curl http://localhost:8000/health
+
+   # Send test optimization request
+   curl -s -X POST http://localhost:8000/optimize-energy \
+     -H "Content-Type: application/json" \
+     -d @samples/gridwise_sample.json > response.json
+
+   # Validate response
+   python validate.py response.json samples/gridwise_sample.json
+   ```
+
+4. View logs or stop:
+   ```bash
+   docker compose logs -f
+   docker compose down
+   ```
+
+#### Option B: Standalone Docker CLI
 
 ```bash
-docker build -t gridwise-optimizer:local ./backend
+docker build -t gridwise-optimizer:local .
 docker run --rm -p 8000:8000 -e GEMINI_API_KEY=your-key gridwise-optimizer:local
-curl http://localhost:8000/health
 ```
 
-The container binds to `0.0.0.0:8000`. Render can use
-`backend/render.yaml`; set `GEMINI_API_KEY` as a secret environment variable.
+The container runs as a secure non-root user (`appuser`), includes built-in container healthchecks, and binds to `0.0.0.0:${PORT:-8000}`. Render uses `render.yaml` or `backend/render.yaml`; set `GEMINI_API_KEY` as a secret environment variable in Render dashboard.
 
 ## Notes for the judge harness
 
