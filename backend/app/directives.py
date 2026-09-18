@@ -367,4 +367,14 @@ def deterministic_interpret_all(
     notes: List[str],
     capacity_kwh: float,
 ) -> List[Dict[str, Any]]:
-    return [deterministic_interpret(n, i, capacity_kwh).__dict__ for i, n in enumerate(notes)]
+    interpretations: List[Dict[str, Any]] = []
+    for i, note in enumerate(notes):
+        directive = deterministic_interpret(note, i, capacity_kwh)
+        interpretations.append({
+            "note_index": directive.note_index,
+            "applies": directive.directive_type != "no_op",
+            "directive_type": directive.directive_type,
+            "structured_adjustment": directive.adjustment_dict(),
+            "explanation": directive.explanation,
+        })
+    return interpretations
