@@ -3,7 +3,7 @@ services:
     name: gridwise-optimizer
     runtime: docker
     rootDir: backend
-    plan: starter
+    plan: free
     healthCheckPath: /health
     envVars:
       - key: GEMINI_API_KEY
