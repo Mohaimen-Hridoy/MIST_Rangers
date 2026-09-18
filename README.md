@@ -66,10 +66,10 @@ Dockerfile and starts `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
 
 #### Option A: Run with Docker Compose (Recommended)
 
-1. Create or configure `.env` (optional for local fallback, required for live Gemini judging):
+1. Create or configure `backend/.env` (optional for local fallback, required for live Gemini judging):
    ```bash
-   cp .env.example .env
-   # Edit .env and paste your GEMINI_API_KEY
+   cp backend/.env.example backend/.env
+   # Edit backend/.env and paste your GEMINI_API_KEY
    ```
 
 2. Start the service with one command:
@@ -100,11 +100,26 @@ Dockerfile and starts `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
 #### Option B: Standalone Docker CLI
 
 ```bash
-docker build -t gridwise-optimizer:local .
-docker run --rm -p 8000:8000 -e GEMINI_API_KEY=your-key gridwise-optimizer:local
+docker build -t gridwise-optimizer:v1 ./backend
+docker run --rm --name gridwise-api -p 8000:8000 \
+   --env-file backend/.env \
+   gridwise-optimizer:v1
 ```
 
-The container runs as a secure non-root user (`appuser`), includes built-in container healthchecks, and binds to `0.0.0.0:${PORT:-8000}`. Render uses `render.yaml` or `backend/render.yaml`; set `GEMINI_API_KEY` as a secret environment variable in Render dashboard.
+Verify the container before submission:
+
+```bash
+curl http://localhost:8000/health
+curl -s -X POST http://localhost:8000/optimize-energy \
+   -H "Content-Type: application/json" \
+   -d @samples/gridwise_sample.json > response.json
+python validate.py response.json samples/gridwise_sample.json
+```
+
+The container runs as a secure non-root user (`appuser`), includes a built-in
+healthcheck, binds to `0.0.0.0:${PORT:-8000}`, and never copies `.env` into the
+image. Render uses `backend/render.yaml`; set `GEMINI_API_KEY` as a secret
+environment variable in the Render dashboard.
 
 ## Notes for the judge harness
 
